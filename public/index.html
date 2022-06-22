@@ -43,7 +43,7 @@
             charactersQueue.splice(0, 1);
 
             $.ajax({
-                url: `/status/${serverName}/${character}`,
+                url: `/api/${serverName}/${character}`,
                 'cache': false,
                 'dataType': "json",
                 "async": true,

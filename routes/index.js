@@ -4,10 +4,6 @@ var router = express.Router();
 var request = require('request');
 
 /* GET home page. */
-router.get('/alive', function(req, res, next) {
-  res.json({message: 'alive'});
-});
-
 router.get('/api/:serverName/:character', function(req, res) {
   var character = req.params.character;
   var serverName = req.params.serverName;
