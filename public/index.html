@@ -30,8 +30,59 @@
     </body>
 
     <script type="text/javascript">
+        var charactersQueue = [];
+        var timerObj = null;
+
+        function checkNextCharacter() {
+            if(charactersQueue.length == 0)
+                return;
+
+            var serverName = charactersQueue[0].serverName;
+            var character = charactersQueue[0].character;
+
+            charactersQueue.splice(0, 1);
+
+            $.ajax({
+                url: `/status/${serverName}/${character}`,
+                'cache': false,
+                'dataType': "json",
+                "async": true,
+                "method": "GET",
+                success: (data) => {
+                    var targetCell = $(`table tbody tr[class="${serverName}-${character}"] td:nth-child(3)`);
+                    if(data.error) {
+                        $(targetCell).css("color", "red");
+                        $(targetCell).html("ERROR!");
+                    }
+                    else {
+                        if(data.online) {
+                            $(targetCell).css("color", "green");
+                            $(targetCell).html("Online");
+                        }
+                        else {
+                            $(targetCell).css("color", "red");
+                            $(targetCell).html("Offline");
+                        }
+                    }
+
+                    if(charactersQueue.length > 0) {
+                        timerObj = setTimeout(function() { checkNextCharacter(); }, 3000);
+                    }
+                    else {
+                        timerObj = null;
+                    }
+                }
+            });
+        }
+
         function onAccountClick(username) {
+            // Clear previous data/requests
             $("table tbody tr").remove();
+            charactersQueue = [];
+            if(timerObj != null) {
+                clearTimeout(timerObj);
+                timerObj = null;
+            }
 
             var account = jsonData.accounts.filter((acc) => { return acc.username == username; });
 
@@ -45,35 +96,15 @@
                             <tr class="${serverName}-${character}">
                                 <td>${serverName}</td>
                                 <td>${character}</td>
-                                <td>Unknown</td>
+                                <td>Please wait ...</td>
                             </tr>`
                         );
 
-                        $.ajax({
-                            url: `https://armory.warmane.com/api/character/${character}/${serverName}/profile`,
-                            'cache': false,
-                            'dataType': "json",
-                            "async": true,
-                            "crossDomain": true,
-                            "method": "GET",
-                            "headers": {
-                                "Origin": window.location.hostname
-                            },
-                            success: (data) => {
-                                data = JSON.parse(data);
-                                
-                                console.log($(`table tbody tr[class="${serverName}-${character}"]:nth-child(3)]`));
-                                if(data.online) {
-                                    console.log("on");
-                                }
-                                else {
-
-                                    console.log("off");
-                                }
-                            }
-                        });
+                        charactersQueue.push({ serverName: serverName, character: character });
                     });
                 });
+
+                timerObj = setTimeout(function() { checkNextCharacter(); }, 100);
             }
         }
 

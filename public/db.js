@@ -9,7 +9,7 @@ var jsonData = {
                 },
                 {
                     "name": "Lordaeron",
-                    "characters": ["Neospacian", "Poder"]
+                    "characters": ["Neospacian", "Poder", "Neosknight", "Ioanichius"]
                 }
             ]
         }
