@@ -56,6 +56,9 @@
                             "async": true,
                             "crossDomain": true,
                             "method": "GET",
+                            "headers": {
+                                "Origin": window.location.hostname
+                            },
                             success: (data) => {
                                 data = JSON.parse(data);
                                 
