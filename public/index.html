@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+        <title>Warmane Online Status Checker</title>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+        <script src='js/jquery.min.js'></script>
+        <link rel='stylesheet' type='text/css' media='screen' href='css/bootstrap.min.css'>
+        <script src='js/bootstrap.min.js'></script>
+        <script src='db.js'></script>
+    </head>
+    <body>
+        <h3 style="text-align: center;">Accounts</h3>
+        <div class="accounts-container row"></div>
+        
+        <h4 style="text-align: center;">Characters</h4>
+        <div class="characters-container">
+            <table class="table table-striped">
+                <thead>
+                    <th>Server</th>
+                    <th>Character</th>
+                    <th>Status</th>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+    </body>
+
+    <script type="text/javascript">
+        function onAccountClick(username) {
+            $("table tbody tr").remove();
+
+            var account = jsonData.accounts.filter((acc) => { return acc.username == username; });
+
+            if(account != null) {
+                account = account[0];
+                account.servers.forEach((server) => {
+                    var serverName = server.name;
+
+                    server.characters.forEach((character) => {
+                        $("table tbody").append(`
+                            <tr class="${serverName}-${character}">
+                                <td>${serverName}</td>
+                                <td>${character}</td>
+                                <td>Unknown</td>
+                            </tr>`
+                        );
+
+                        $.ajax({
+                            url: `http://armory.warmane.com/api/character/${character}/${serverName}/profile`,
+                            'cache': false,
+                            'dataType': "json",
+                            "async": true,
+                            "crossDomain": true,
+                            "method": "GET",
+                            "headers": {
+                                "accept": "application/json",
+                                "Access-Control-Allow-Origin":"*"
+                            },
+                            success: (data) => {
+                                data = JSON.parse(data);
+                                
+                                console.log($(`table tbody tr[class="${serverName}-${character}"]:nth-child(3)]`));
+                                if(data.online) {
+                                    console.log("on");
+                                }
+                                else {
+
+                                    console.log("off");
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+        }
+
+        $(document).ready(() => {
+            var accContainer = $(".accounts-container").first();
+
+            jsonData.accounts.forEach((account) => {
+
+                accContainer.append($(`
+                    <div class="card" style="cursor:pointer;" onclick="onAccountClick('${account.username}');">
+                        <div class="card-body">${account.username}</div>
+                    </div>`)
+                );
+            });
+        });
+    </script>
+</html>
